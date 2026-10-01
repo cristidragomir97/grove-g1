@@ -25,6 +25,10 @@ else
     echo "Warning: no .env file found at $ENV_FILE; falling back to shell environment and Compose defaults." >&2
 fi
 
+# Use Docker's built-in builder rather than a globally selected GPU-enabled builder.
+# Override in .env when a custom builder is intentional.
+export BUILDX_BUILDER="${BUILDX_BUILDER:-default}"
+
 # Our packages. The vendored ones' lint targets fail by design.
 OUR_PACKAGES='^(g1_|canopy)'
 

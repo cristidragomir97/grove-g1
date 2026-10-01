@@ -430,7 +430,8 @@ def generate_launch_description():
                 "cameras",
                 default_value="",
                 description="Comma-separated cameras the simulator renders, from the sensor "
-                "config's list: 'head', 'chest', 'head,chest'. Empty keeps the config's own choice. "
+                "config's list: 'head', 'chest', 'head,chest', or 'none' to disable cameras. "
+                "Empty keeps the config's own choice. "
                 "Each costs ~5 ms of render per frame, and a detector per camera downstream.",
             ),
             DeclareLaunchArgument(

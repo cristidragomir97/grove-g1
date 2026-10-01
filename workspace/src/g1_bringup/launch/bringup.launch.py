@@ -490,7 +490,8 @@ def generate_launch_description():
                 "cameras",
                 default_value="",
                 description="Comma-separated cameras the simulator renders: 'head' (manipulation's), "
-                "'chest' (mapping's), both, or empty for the world's sensor config.",
+                "'chest' (mapping's), both, 'none' to disable cameras, "
+                "or empty for the world's sensor config.",
             ),
             DeclareLaunchArgument(
                 "headless",

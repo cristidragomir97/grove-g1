@@ -95,8 +95,18 @@ live in `g1_bringup/launch/world_model.launch.py`.
 
 ## Quick start
 
-You need Docker Engine with Compose v2, the NVIDIA driver and the NVIDIA Container Toolkit on the
-host. The GUI demos need an X11 desktop session; `manage.sh start` lets the container use it.
+You need Docker Engine with Compose v2 or newer. Simulation uses CPU physics and CPU walking-policy
+inference, with OpenGL graphics: AMD and Intel GPUs use Mesa by default and need a working host
+graphics driver with `/dev/dri` available. No CUDA or ROCm is needed for simulation. The GUI demos
+need an X11 desktop session; `manage.sh start` lets the container use it.
+
+`manage.sh` uses Docker's built-in `default` builder so an unrelated GPU-enabled BuildKit
+container cannot block simulation builds. Set `BUILDX_BUILDER` in `.env` to use a custom builder.
+
+NVIDIA hosts also need the NVIDIA driver and NVIDIA Container Toolkit, and should uncomment
+`COMPOSE_FILE=docker-compose.yml:docker-compose.nvidia.yml` in `.env` before starting. In VS Code,
+also add `../docker-compose.nvidia.yml` to `.devcontainer/devcontainer.json`'s `dockerComposeFile`
+array when using NVIDIA.
 
 ```bash
 git clone --recurse-submodules https://github.com/Adyansh04/grove-g1.git
@@ -105,6 +115,25 @@ cp .env.example .env
 ./scripts/manage.sh start
 ./scripts/manage.sh build
 ```
+
+Check hardware rendering inside the container with `./scripts/manage.sh exec glxinfo -B`, then
+open the simulator with `./scripts/demos/navigation-and-moveit.sh sim`. On AMD, the renderer should
+name the AMD GPU; `llvmpipe` indicates CPU software rendering. Navigation, MoveIt and structured
+pick-and-place work without the optional host AI model servers; the real learned perception and
+grasping models have separate requirements in their guides.
+
+For a visible simulation with LiDAR and ground-truth odometry but no camera rendering:
+
+```bash
+./scripts/manage.sh exec ros2 launch g1_bringup bringup.launch.py \
+    headless:=false sensors:=true cameras:=none odometry:=ground_truth
+```
+
+Use `cameras:=head`, `chest`, or `head,chest` when camera images are needed. Camera rendering and
+LiDAR sampling share a thread, so expensive camera frames reduce the sensor rate. Headless mode
+uses Xvfb and software OpenGL; for a LiDAR-only headless run, disable cameras with `cameras:=none`.
+The LiDAR geometry test can be run without camera load using
+`./scripts/manage.sh exec env GROVE_G1_CAMERAS=none ctest --test-dir build/g1_bringup -R '^test_lidar_geometry$' --output-on-failure`.
 
 In an existing clone, `git submodule update --init` fetches the submodules, and
 `git config submodule.recurse true` makes `git pull` keep them in step. Third-party code the
